@@ -124,5 +124,6 @@ Os executáveis não estão assinados. Verifica o `.sha256` do arquivo e, se a t
 escolhe "Executar mesmo assim".
 
 ### "Num Linux/macOS não funciona"
-Os pacotes para estes sistemas são construídos pela integração contínua mas ainda não foram validados em
-máquinas reais. Reporta o problema com a saída de `docsmaker --version` e do erro.
+Os pacotes para estes sistemas são construídos e testados pela integração contínua (testes e arranque do
+executável), mas só o Windows foi usado de ponta a ponta com o Ollama e um modelo reais. O pacote de macOS é
+só para Apple Silicon e o de Linux para x86-64. Reporta o problema com a saída de `docsmaker --version` e do erro.

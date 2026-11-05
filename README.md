@@ -144,7 +144,9 @@ scripts\build.ps1         # Windows (gcc must be on PATH, installed in a path wi
 ```
 
 Output goes to `dist/`: an archive, its checksum, and a smoke-tested binary.
-CI builds and releases for Windows, Linux and macOS (`.github/workflows`).
+CI builds, tests and releases for Windows (x64), Linux (x64) and macOS (Apple
+Silicon only) (`.github/workflows`); releases are created as drafts, to be
+reviewed and published by hand.
 
 ## Limits
 
