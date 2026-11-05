@@ -31,6 +31,7 @@ type rawMethod struct {
 	modifiers   []string
 	existingDoc string
 	calls       []rawCall
+	signals     *langmodel.Signals // nil when the method has no body
 	srcRange    langmodel.Range
 }
 
@@ -216,8 +217,10 @@ func extractMethod(n *sitter.Node, source []byte, file string, isConstructor boo
 	}
 
 	var calls []rawCall
+	var signals *langmodel.Signals
 	if body := n.ChildByFieldName("body"); body != nil {
 		collectCalls(body, source, &calls)
+		signals = computeSignals(body, source)
 	}
 
 	return rawMethod{
@@ -227,8 +230,69 @@ func extractMethod(n *sitter.Node, source []byte, file string, isConstructor boo
 		modifiers:   modifiers(childByFieldOrType(n, "", "modifiers")),
 		existingDoc: existingDocFor(n, source),
 		calls:       calls,
+		signals:     signals,
 		srcRange:    rangeOf(n, file),
 	}
+}
+
+// computeSignals measures a method body; see langmodel.Signals.
+func computeSignals(body *sitter.Node, source []byte) *langmodel.Signals {
+	s := &langmodel.Signals{}
+	countSignals(body, source, s)
+	return s
+}
+
+func countSignals(n *sitter.Node, source []byte, s *langmodel.Signals) {
+	switch t := n.Type(); {
+	case t == "local_variable_declaration" || strings.HasSuffix(t, "_statement"):
+		s.Statements++
+		switch t {
+		case "if_statement":
+			s.Branches++
+		case "throw_statement":
+			s.Throws++
+		}
+	case t == "ternary_expression":
+		s.Branches++
+	case t == "switch_label":
+		// `default` is the fallthrough, not a decision of its own.
+		if strings.HasPrefix(strings.TrimSpace(text(n, source)), "case") {
+			s.Branches++
+		}
+	case t == "binary_expression":
+		switch text(n.ChildByFieldName("operator"), source) {
+		case "<", ">", "<=", ">=", "==", "!=":
+			s.Comparisons++
+		}
+	case t == "method_invocation":
+		switch text(n.ChildByFieldName("name"), source) {
+		case "equals", "equalsIgnoreCase", "compareTo", "matches":
+			s.Comparisons++
+		}
+	case t == "string_literal":
+		if len(strings.Trim(text(n, source), `"`)) > 0 {
+			s.Literals++
+		}
+	case strings.HasSuffix(t, "_integer_literal") || t == "decimal_floating_point_literal" || t == "hex_floating_point_literal":
+		if !trivialNumber(text(n, source)) {
+			s.Literals++
+		}
+	}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		countSignals(n.NamedChild(i), source, s)
+	}
+}
+
+// trivialNumber reports whether a numeric literal is 0 or 1 in any spelling
+// (0, 1L, 0.0, 1.0f, ...): loop starts, increments and identity values are
+// not business thresholds.
+func trivialNumber(lit string) bool {
+	lit = strings.ToLower(strings.TrimRight(strings.ReplaceAll(lit, "_", ""), "lfd"))
+	switch lit {
+	case "0", "1", "0.0", "1.0", "0.", "1.", ".0":
+		return true
+	}
+	return false
 }
 
 func collectCalls(n *sitter.Node, source []byte, out *[]rawCall) {

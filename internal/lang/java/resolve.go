@@ -191,6 +191,7 @@ func resolveMethod(m rawMethod, owner *rawType, st symbolTable) langmodel.Method
 		CallsOut:    callsOut,
 		ExistingDoc: m.existingDoc,
 		SourceRange: m.srcRange,
+		Signals:     m.signals,
 	}
 }
 

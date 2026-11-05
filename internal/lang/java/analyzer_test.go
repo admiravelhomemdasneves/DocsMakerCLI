@@ -224,3 +224,90 @@ func TestParseProject_UnknownFileSkippedAsDiagnostic(t *testing.T) {
 		t.Fatalf("expected no packages, got %+v", model.Packages)
 	}
 }
+
+const signalsSrc = `package com.example;
+
+public abstract class Rules {
+    private int n;
+
+    public int getN() {
+        return n;
+    }
+
+    public abstract boolean accepts(int v);
+
+    public double fee(int qty, String kind) {
+        if (qty < 0) {
+            throw new IllegalArgumentException("negative");
+        }
+        if ("VIP".equals(kind)) {
+            return 0.0;
+        } else if (qty >= 100) {
+            return 0.15;
+        }
+        return qty > 10 ? 2.5 : 1;
+    }
+
+    public String label(int code) {
+        switch (code) {
+            case 200:
+                return "ok";
+            case 404:
+                return "missing";
+            default:
+                return "";
+        }
+    }
+
+    public int sum(int[] xs) {
+        int total = 0;
+        for (int i = 0; i < xs.length; i++) {
+            total += xs[i] + 1;
+        }
+        return total;
+    }
+}
+`
+
+func TestParseProject_MethodSignals(t *testing.T) {
+	dir := t.TempDir()
+	files := []string{writeJava(t, dir, "Rules.java", signalsSrc)}
+
+	model, _, err := (&Analyzer{}).ParseProject(context.Background(), files)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rules := findType(model, "Rules")
+	if rules == nil {
+		t.Fatal("type Rules not found")
+	}
+
+	if m := findMethod(rules, "accepts"); m == nil || m.Signals != nil {
+		t.Errorf("abstract method should have nil Signals, got %+v", m)
+	}
+
+	cases := map[string]langmodel.Signals{
+		// one return statement, nothing else
+		"getN": {Statements: 1},
+		// 1 throw; decisions and operators counted as follows:
+		// branches = if(qty<0) + if(VIP) + else-if(qty>=100) + ternary = 4
+		// comparisons = qty<0, equals, qty>=100, qty>10 = 4
+		// literals = "negative", "VIP", 100, 0.15, 10, 2.5 = 6 (0.0 and 1 are trivial)
+		"fee": {Statements: 7, Branches: 4, Throws: 1, Comparisons: 4, Literals: 6},
+		// two `case` labels count, `default` does not; the grammar models a
+		// switch as an expression, so only the three returns are statements
+		"label": {Statements: 3, Branches: 2, Literals: 4},
+		// the loop's 0 and 1 are not thresholds; i < xs.length is a comparison
+		"sum": {Statements: 5, Comparisons: 1},
+	}
+	for name, want := range cases {
+		m := findMethod(rules, name)
+		if m == nil || m.Signals == nil {
+			t.Errorf("%s: missing method or Signals (%+v)", name, m)
+			continue
+		}
+		if *m.Signals != want {
+			t.Errorf("%s: Signals = %+v, want %+v", name, *m.Signals, want)
+		}
+	}
+}
