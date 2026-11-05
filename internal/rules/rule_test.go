@@ -129,7 +129,8 @@ type expectedRules struct {
 		Summary  string     `json:"summary"`
 		Keywords [][]string `json:"keywords"`
 	} `json:"rules"`
-	NoRule []string `json:"noRule"`
+	NoRule    []string `json:"noRule"`
+	Technical []string `json:"technical"`
 }
 
 // TestBillingFixtureMatchesGabarito keeps the planted-rules answer key honest:
@@ -171,7 +172,7 @@ func TestBillingFixtureMatchesGabarito(t *testing.T) {
 			t.Errorf("rule %s needs a summary and keywords", r.Target)
 		}
 	}
-	for _, target := range exp.NoRule {
+	for _, target := range append(exp.NoRule, exp.Technical...) {
 		check(target)
 	}
 }

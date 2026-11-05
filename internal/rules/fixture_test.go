@@ -2,7 +2,6 @@ package rules_test
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,18 +12,22 @@ import (
 )
 
 // TestSelectCandidatesOnBillingFixture runs the real Java analyzer over the
-// planted-rules fixture and checks the selector against the answer key: every
-// planted rule must be a candidate and no accessor may be.
+// fixture and checks the selector against the answer key: every planted rule
+// and every logic-heavy technical method must be a candidate (the model is the
+// one to say there is no business rule in the latter), and no accessor may be.
 func TestSelectCandidatesOnBillingFixture(t *testing.T) {
 	root := filepath.Join("..", "..", "testdata")
-	billing := filepath.Join(root, "sample-project", "src", "main", "java", "com", "example", "billing")
-	entries, err := os.ReadDir(billing)
-	if err != nil {
-		t.Fatal(err)
-	}
+	java_ := filepath.Join(root, "sample-project", "src", "main", "java", "com", "example")
+
 	var files []string
-	for _, e := range entries {
-		files = append(files, filepath.Join(billing, e.Name()))
+	for _, pkg := range []string{"billing", "util"} {
+		entries, err := os.ReadDir(filepath.Join(java_, pkg))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, e := range entries {
+			files = append(files, filepath.Join(java_, pkg, e.Name()))
+		}
 	}
 
 	model, _, err := (&java.Analyzer{}).ParseProject(context.Background(), files)
@@ -37,21 +40,19 @@ func TestSelectCandidatesOnBillingFixture(t *testing.T) {
 		got[c.Target()] = c.Score
 	}
 
-	data, err := os.ReadFile(filepath.Join(root, "billing-expected-rules.json"))
+	exp, err := rules.LoadGabarito(filepath.Join(root, "billing-expected-rules.json"))
 	if err != nil {
-		t.Fatal(err)
-	}
-	var exp struct {
-		Rules  []struct{ Target string } `json:"rules"`
-		NoRule []string                  `json:"noRule"`
-	}
-	if err := json.Unmarshal(data, &exp); err != nil {
 		t.Fatal(err)
 	}
 
 	for _, r := range exp.Rules {
 		if _, ok := got[r.Target]; !ok {
 			t.Errorf("planted rule %s was not selected", r.Target)
+		}
+	}
+	for _, target := range exp.Technical {
+		if _, ok := got[target]; !ok {
+			t.Errorf("technical method %s should be a candidate (it is the false-positive probe)", target)
 		}
 	}
 	for _, target := range exp.NoRule {
@@ -65,7 +66,7 @@ func TestSelectCandidatesOnBillingFixture(t *testing.T) {
 		names = append(names, target)
 	}
 	sort.Strings(names)
-	if len(names) != len(exp.Rules) {
-		t.Errorf("selected %d methods %v, want exactly the %d planted rules", len(names), names, len(exp.Rules))
+	if want := len(exp.Rules) + len(exp.Technical); len(names) != want {
+		t.Errorf("selected %d methods %v, want exactly the %d in the key", len(names), names, want)
 	}
 }

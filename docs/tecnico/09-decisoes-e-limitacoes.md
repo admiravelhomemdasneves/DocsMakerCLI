@@ -39,8 +39,9 @@
 - **Qualidade** limitada pelo modelo local; os resultados com modelos pequenos (1.5B) são genéricos.
   Os testes automáticos não avaliam a qualidade do texto.
 - **Sem retentativas nem streaming** no `doc`. O `doc` também não tem progresso por unidade (o `rules` mostra-o no stderr).
-- **Regras de negócio** (`rules`): o "porquê" é sempre uma inferência do modelo, a qualidade ainda não foi
-  medida com um modelo real e cada método é analisado isoladamente. Lista completa em
+- **Regras de negócio** (`rules`): o "porquê" é sempre uma inferência do modelo; com o modelo de 1.5B medido,
+  9 de 15 regras plantadas saem com todos os valores certos e 5 de 6 métodos técnicos são tomados por regras;
+  cada método é analisado isoladamente. Lista completa em
   [10 — Limitações](10-extracao-de-regras.md#9-limitações).
 
 ### Git e inline

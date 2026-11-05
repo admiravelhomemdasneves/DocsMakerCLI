@@ -137,9 +137,13 @@ modelo nem é chamado. Ver o [capítulo 5](05-informacao-sensivel.md).
 - **Sobrecargas** são analisadas e identificadas separadamente (pela linha), e
   `--target pacote.Classe#método` inclui todas as que têm esse nome (ao contrário
   do `doc`, que escolhe só a primeira).
-- **A qualidade depende do modelo.** Modelos pequenos acertam menos, inventam
-  mais "porquês" e falham mais vezes o formato de resposta. Para código importante,
-  usa um modelo maior (`--model`) e revê sempre.
+- **A qualidade depende do modelo.** Medido com o modelo pequeno `qwen2.5-coder:1.5b`
+  numa fixture com regras conhecidas: encontrou todas as regras, mas só cerca de
+  60% (9 de 15) saíram com todos os valores certos; em métodos puramente técnicos
+  (formatação de texto) dizia quase sempre que havia uma regra (e por vezes com confiança
+  `alta`); e a confiança `alta` apareceu também em regras incompletas. O "porquê" foi quase sempre genérico.
+  Para código importante, usa um modelo maior (`--model`) e revê sempre. Os
+  detalhes estão no [capítulo técnico 10](../tecnico/10-extracao-de-regras.md#71-avaliação-com-um-modelo-real).
 - Os valores de configuração que não estão no ficheiro do método (uma constante
   noutra classe, uma tabela na base de dados) não são vistos pelo modelo.
 

@@ -215,10 +215,84 @@ idioma. `--mode sidecar` usa o `SidecarWriter` existente com nível vazio:
 | `docgen/rulescatalog_test.go` | Relatório em pt/en, agrupamento, determinismo, ficheiro por classe |
 | `cli/rules_test.go` | Ponta a ponta contra um Ollama falso: relatório, JSON, `--min-confidence`, sidecar sem tocar nas fontes, cache, validação, segredos |
 
-A fixture é `testdata/sample-project/.../billing/` (5 regras plantadas, mais uma
-classe só com getters) e o gabarito `testdata/billing-expected-rules.json`
-(palavras-chave que uma explicação correta deve mencionar). Um teste garante que
-o gabarito e os fontes não divergem.
+A fixture é `testdata/sample-project/` e o gabarito
+`testdata/billing-expected-rules.json`. Tem três grupos de métodos:
+
+| Grupo | Onde | Para quê |
+|-------|------|----------|
+| `rules` (5) | `billing/` | Regras plantadas, no estilo de código antigo: desconto por escalão, limite de crédito, IVA por região, validação de NIF, janela de devolução. Cada uma com palavras-chave que uma explicação correta deve mencionar |
+| `technical` (2) | `util/ReceiptFormatter` | Lógica **sem** regra de negócio (formatação de texto). O seletor tem de os escolher e o modelo deve responder "sem regra"; se disser que há regra, é um falso positivo |
+| `noRule` (5) | `billing/Customer` | Só getters. O seletor nunca os pode enviar ao modelo |
+
+Um teste garante que o gabarito e os fontes não divergem (e outro, com o
+analisador real, que o seletor escolhe exatamente os 7 métodos dos dois
+primeiros grupos e nenhum do terceiro).
+
+### 7.1 Avaliação com um modelo real
+
+`rules.Evaluate` compara uma execução com o gabarito. Para cada regra plantada
+dá um veredicto: **completa** (todos os grupos de palavras-chave aparecem na
+regra ou nas condições), **parcial**, **errada** (encontrou uma regra mas nenhum
+grupo) ou **perdida**. Conta também os **falsos positivos** (regra declarada num
+método técnico), a **sobreconfiança** (regra não completa mas com confiança
+`high` depois da verificação de evidência) e as linhas de evidência removidas.
+O teste `TestEvaluateRealModel` corre isto contra um Ollama real, em cópias
+limpas da fixture (cache vazia em cada repetição) e fica ignorado se a variável
+não estiver definida:
+
+```
+DOCSMAKER_EVAL_MODEL=qwen2.5-coder:1.5b go test ./internal/rules -run TestEvaluateRealModel -v -timeout 30m
+```
+
+(`DOCSMAKER_EVAL_RUNS` repetições, por omissão 3; `DOCSMAKER_EVAL_LANG`;
+`DOCSMAKER_EVAL_OUT` guarda o JSON e o relatório de cada repetição.)
+
+**Resultado: `qwen2.5-coder:1.5b`, 3 repetições, saída em inglês** (cerca de 7 s
+por repetição de 7 métodos):
+
+| | Rep. 1 | Rep. 2 | Rep. 3 | Total |
+|---|---|---|---|---|
+| Regras plantadas encontradas (de 5) | 5 | 5 | 5 | **15/15** |
+| …com todos os valores certos (completas) | 3 | 2 | 4 | **9/15** |
+| …parciais | 2 | 3 | 1 | 6/15 |
+| Falsos positivos (de 2 métodos técnicos) | 2 | 1 | 2 | **5/6** |
+| Parciais com confiança `high` (sobreconfiança) | 1 | 3 | 0 | 4 (de 6 parciais) |
+| Linhas de evidência inventadas e removidas | 17 | 13 | 22 | 52 |
+| Métodos sem resposta utilizável | 0 | 0 | 0 | 0 |
+
+Por regra, repetições completas: `discountFor` 2/3, `canExtendCredit` 1/3,
+`vatRate` 1/3, `isValidNif` 2/3, `canReturn` 3/3.
+
+O que isto mostra:
+
+- **Encontra** as regras e acerta nos valores quando são limiares explícitos
+  (`canReturn` sempre; os escalões de `discountFor` quase sempre). Nunca falhou o
+  formato JSON nem recusou um método.
+- **Falha nos casos densos.** O `vatRate` (3 regiões × 3 categorias) saiu parcial
+  em 2 de 3 repetições, com taxas trocadas (por exemplo, "região MADEIRA: 0.05").
+- **Inventa detalhes.** Para o `isValidNif`, numa repetição acrescentou "o primeiro
+  dígito tem de estar entre 0 e 4" (não está no código) e justificou com "regras
+  definidas pelo Ministério das Finanças". A métrica por palavras-chave deu essa
+  repetição como *completa*: é só uma aproximação e não substitui ler as
+  explicações.
+- **Falsos positivos frequentes:** em 5 de 6 casos descreveu a formatação de
+  texto (`padLeft`, `truncate`) como se fosse uma regra, e em 3 desses 5 casos
+  com confiança `high` (nos outros 2 a verificação de evidência não encontrou
+  nenhuma linha real e baixou-a para `low`). Quando cita código verdadeiro, a
+  verificação não o trava: ela valida a citação, não a classificação.
+- **A confiança do modelo não é fiável sozinha:** 4 das 6 regras parciais foram
+  dadas como `high`. É por isso que a verificação de evidência existe, e por isso
+  o relatório trata a confiança como uma indicação e pede sempre revisão.
+- **O "porquê" é quase sempre genérico** ("incentivo a compras em volume") ou
+  circular ("são regras de negócio"), quando não é inventado.
+- **A verificação de evidência é muito ativa** (52 linhas removidas em 3
+  repetições): o modelo cita linhas parafraseadas ou juntas. É conservadora; uma
+  citação reformatada é descartada mesmo quando a ideia estava certa.
+
+Limites desta medição: um só modelo (o `qwen2.5-coder:7b`, o modelo por omissão,
+não está descarregado nesta máquina e não foi avaliado), 3 repetições, 5 regras
+e 2 negativos, e uma métrica por palavras-chave. Serve para comparar modelos e
+versões do prompt, não como taxa de acerto geral.
 
 ## 8. Decisões
 
@@ -236,10 +310,12 @@ o gabarito e os fontes não divergem.
 
 ## 9. Limitações
 
-- **A qualidade ainda não foi medida com um modelo real.** Os testes
-  automáticos usam um modelo falso e provam o encanamento, as defesas e o
-  formato, não a qualidade do texto. A avaliação contra o gabarito está planeada
-  como passo à parte e será registada aqui.
+- **A qualidade depende muito do modelo.** Os testes automáticos usam um modelo
+  falso e provam o encanamento, as defesas e o formato, não a qualidade do
+  texto. Com o `qwen2.5-coder:1.5b` medido na [secção 7.1](#71-avaliação-com-um-modelo-real):
+  encontra as regras, mas só 9 de 15 saem com todos os valores certos, quase todos
+  os métodos técnicos são tomados por regras e o "porquê" é genérico. Um modelo
+  maior deve melhorar; não foi medido.
 - Cada método é visto isoladamente: nem chamadas entre métodos, nem constantes
   de outras classes, nem a base de dados.
 - A pontuação é uma heurística: um método com regras expressas só por chamadas
@@ -252,7 +328,9 @@ o gabarito e os fontes não divergem.
 
 ## 10. Ideias seguintes
 
-1. Medir a qualidade com vários modelos e registar a tabela (gabarito já existe).
+1. Medir também o `qwen2.5-coder:7b` e outros (o teste e o gabarito já existem) e
+   afinar o prompt contra os falsos positivos (exemplos negativos, uma pergunta
+   prévia "isto é uma regra de negócio ou uma rotina técnica?").
 2. Usar o histórico git (mensagens de commit do método) como pista para o
    "porquê", sempre como contexto, nunca como facto.
 3. Consolidar as regras ao nível do projeto (agrupar duplicados, detetar

@@ -161,8 +161,9 @@ CI builds and releases for Windows, Linux and macOS (`.github/workflows`).
 `testdata/sample-project` and checks, with real commits, that: inline docs are
 refused before `init`; a planted credential never reaches a prompt, an output,
 the cache or a commit; AI comments never appear in `git show HEAD`; re-runs are
-cached; remote hosts and cloud models are refused. It exits non-zero if any of
-that stops being true.
+cached; remote hosts and cloud models are refused; `rules` leaves the sources
+untouched, honours the same secret gates and is served from the cache. It exits
+non-zero if any of that stops being true.
 
 ```
 scripts/demo.sh            # needs a running local Ollama with a model

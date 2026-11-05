@@ -1,5 +1,5 @@
 {
-  "_comment": "Gabarito of the business rules planted in sample-project/billing. Used by rules tests and the quality evaluation (step 7). Per rule: every inner list in 'keywords' must be matched by at least one of its alternatives (lowercase fragments) in a correct explanation.",
+  "_comment": "Answer key for the business rules planted in sample-project (billing/). Used by the rules tests and the quality evaluation. 'rules': per rule, every inner list in 'keywords' must be matched by at least one of its alternatives (lowercase fragments) in the statement or conditions of a correct extraction. 'technical': logic-heavy methods that are NOT business rules (a model that reports a rule here produced a false positive). 'noRule': plumbing that the selector must never send to the model.",
   "project": "sample-project",
   "rules": [
     {
@@ -27,6 +27,10 @@
       "summary": "Returns: perishables never; electronics only unopened within 30 days; everything else within 14 days.",
       "keywords": [["14"], ["30"], ["perishable", "perec"], ["opened", "aberto"]]
     }
+  ],
+  "technical": [
+    "com.example.util.ReceiptFormatter#padLeft",
+    "com.example.util.ReceiptFormatter#truncate"
   ],
   "noRule": [
     "com.example.billing.Customer#getName",

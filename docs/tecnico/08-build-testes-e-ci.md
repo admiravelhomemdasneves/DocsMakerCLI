@@ -55,6 +55,7 @@ go test ./...
 | `internal/docgen/gate_test.go` | Os dois portões no pipeline, com um cliente que regista prompts | |
 | `internal/cli/cli_test.go` | Toda a linha de comandos em processo, contra um **Ollama falso** local | Define `OLLAMA_HOST` para um `httptest.Server` (loopback, por isso aceite) |
 | `scripts/demo.sh` | De ponta a ponta: Ollama **real**, repositório git descartável, commits reais | Falha (código ≠ 0) se uma garantia se quebrar |
+| `internal/rules/eval_real_test.go` | Avaliação de qualidade do `rules` contra o gabarito, com um Ollama real | Ignorado sem `DOCSMAKER_EVAL_MODEL`; só relata, não impõe taxas de acerto |
 
 Cobertura aproximada (instruções): `cli` ≈ 91 %, `lang/java` ≈ 89 %, `inserter` ≈ 87 %, `secrets` ≈ 87 %,
 `docgen` ≈ 83 %, `gitfilter` ≈ 77 %, `llm` ≈ 62 %. `app` mede pouco (≈ 17 %) porque é coberto
@@ -75,6 +76,12 @@ Cria um repositório temporário a partir de `testdata/sample-project` e verific
 comentário, saída, cache nem auditoria; `git diff`/commit sem linhas de IA, mesmo depois de uma edição
 humana no mesmo ficheiro; segunda execução idempotente; `OLLAMA_HOST` remoto e modelos *cloud* recusados;
 só `internal/llm` usa `net/http`; allowlist (`w`, `--yes`, `remove`).
+Os passos 8c/8d cobrem o `rules`: só os 5 métodos com decisões são analisados e nenhum getter, as fontes
+ficam intactas, uma segunda execução sai da cache, o modo sidecar escreve `RULES.md`, não há modo `inline`,
+e uma credencial ao lado de uma decisão é bloqueada com `--yes` e redigida sem chegar a relatório,
+cache ou registo. Estes passos não medem a qualidade do texto (ver
+[avaliação](10-extracao-de-regras.md#71-avaliação-com-um-modelo-real)); os passos que usam as classes
+`billing/` e `util/` repõem-nas só no passo 8c, porque os passos `inline` afirmam contagens exatas.
 `DEMO_OFFLINE=1` acrescenta um passo em que **tu** desligas a rede (nunca foi executado).
 
 ## Build e empacotamento

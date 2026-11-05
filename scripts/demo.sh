@@ -7,6 +7,8 @@
 #   3. AI-written comments land in the sources, but never in a commit
 #   4. re-running is idempotent and incremental (cache)
 #   5. remote Ollama hosts and "cloud" models are refused
+#   6. `rules` reports business rules without touching the sources, from the
+#      same secret gates and cache (steps 8c and 8d)
 #
 # Needs a running local Ollama with a model (see `docsmaker model status`).
 # Works in bash on Linux, macOS and Git Bash on Windows. Exits non-zero if any
@@ -60,6 +62,11 @@ trap cleanup EXIT
 
 cp -R "$SRC"/. "$W"/
 rm -rf "$W/.docsmaker" "$W/target"
+# The rules fixtures (billing/, util/) are added back in step 8c: the inline
+# steps below assert exact block counts for the original sample classes.
+JAVA=src/main/java/com/example
+mkdir -p "$LOGS/rules-fixtures"
+for p in billing util; do [ -d "$W/$JAVA/$p" ] && mv "$W/$JAVA/$p" "$LOGS/rules-fixtures/$p"; done
 git_() { git -C "$W" -c user.name=demo -c user.email=demo@example.invalid "$@"; }
 git_ init -q && git_ config core.autocrlf false
 git_ add -A && git_ commit -qm "base" && BASE="$(git_ rev-parse HEAD)"
@@ -150,6 +157,72 @@ id="$("$EXE" allowlist list --project "$W" | awk 'NR==2{print $1}')"
 "$EXE" allowlist remove "$id" --project "$W" >/dev/null
 "$EXE" doc "$W" "${CLS[@]}" --yes "${MODEL_ARGS[@]}" >/dev/null 2>&1
 check "after removing the entry it is blocked again" test "$?" -ne 0
+
+# --- 8c. business rules -------------------------------------------------------------------------
+say "8c. rules: business rules for the planted billing code, without touching the sources"
+if [ -d "$LOGS/rules-fixtures/billing" ]; then
+  for p in billing util; do [ -d "$LOGS/rules-fixtures/$p" ] && cp -R "$LOGS/rules-fixtures/$p" "$W/$JAVA/$p"; done
+  RULES=("$EXE" rules "$W" --target com.example.billing "${MODEL_ARGS[@]}" --yes --output-lang en)
+
+  "${RULES[@]}" --format json >"$LOGS/rules1.json" 2>"$LOGS/rules1.err"; rc=$?
+  tail -2 "$LOGS/rules1.err" | show 2
+  check "rules ran" test "$rc" -eq 0
+  analysed="$(grep -c '^      "status"' "$LOGS/rules1.json")"
+  check "exactly the 5 billing methods with decisions were analysed ($analysed)" test "$analysed" -eq 5
+  check "plumbing (getters) was never sent to the model" bash -c '! grep -q "Customer#get" "$1"' _ "$LOGS/rules1.json"
+  found="$(grep -c '^      "status": "rule"' "$LOGS/rules1.json")"
+  check "the model found rules in the planted code ($found of 5)" test "$found" -ge 1
+  check "every rule carries a confidence" bash -c 'test "$(grep -c "^        \"confidence\"" "$1")" -eq "$2"' _ "$LOGS/rules1.json" "$found"
+  check "the sources are untouched" bash -c 'diff -r "$1" "$2" >/dev/null' _ "$LOGS/rules-fixtures/billing" "$W/$JAVA/billing"
+  check "no tracked file changed" git_ diff --quiet
+
+  "${RULES[@]}" --format json >"$LOGS/rules2.json" 2>/dev/null
+  if grep -q '"status": "failed"' "$LOGS/rules1.json"; then
+    echo "   (skipped: a method failed on the first run, and failed answers are deliberately never cached)"
+  else
+    check "a second run is served from the cache (identical report)" cmp -s "$LOGS/rules1.json" "$LOGS/rules2.json"
+  fi
+
+  "$EXE" rules "$W" --target com.example.billing "${MODEL_ARGS[@]}" --yes --mode sidecar >/dev/null 2>"$LOGS/sidecar.err"; rc=$?
+  [ "$rc" -ne 0 ] && { echo "   rules --mode sidecar exited $rc:"; tail -3 "$LOGS/sidecar.err" | show 3; }
+  check "sidecar mode wrote .docsmaker/rules/RULES.md" test -s "$W/.docsmaker/rules/RULES.md"
+  check "the report says the 'why' is inferred" grep -q 'hipótese inferida' "$W/.docsmaker/rules/RULES.md"
+  echo "   start of the report:"; sed -n 1,12p "$W/.docsmaker/rules/RULES.md" | show 12
+
+  out="$("$EXE" rules "$W" --mode inline 2>&1)"; rc=$?
+  check "there is no inline mode for rules" bash -c 'test "$1" -ne 0 && grep -q "does not support" <<<"$2"' _ "$rc" "$out"
+else
+  echo "   (skipped: no billing fixtures in $SRC)"
+fi
+
+# --- 8d. rules honour the secret gates ----------------------------------------------------------
+say "8d. rules: a credential next to a decision is caught before the model sees it"
+VAULT="$W/$JAVA/vault"; mkdir -p "$VAULT"
+cat >"$VAULT/Gate.java" <<'JAVA_EOF'
+package com.example.vault;
+
+public class Gate {
+    private final String url = "jdbc:mysql://admin:hunter2@localhost:3306/db";
+
+    public boolean allowed(int age) {
+        if (age >= 18) {
+            return true;
+        }
+        if (age < 0) {
+            throw new IllegalArgumentException("age");
+        }
+        return false;
+    }
+}
+JAVA_EOF
+out="$("$EXE" rules "$W" --target com.example.vault "${MODEL_ARGS[@]}" --yes 2>&1)"; rc=$?
+echo "$out" | show 4
+check "--yes blocks the run" test "$rc" -ne 0
+check "the secret value is not printed" bash -c '! grep -q hunter2 <<<"$1"' _ "$out"
+printf 'r\n' | "$EXE" rules "$W" --target com.example.vault "${MODEL_ARGS[@]}" >"$LOGS/vault.txt" 2>&1
+check "answering [r]edact lets it continue" test "$?" -eq 0
+check "the secret is in no report, cache or log" bash -c '! grep -rq hunter2 "$1" "$2/.docsmaker"' _ "$LOGS/vault.txt" "$W"
+rm -rf "$VAULT"
 
 # --- 9. safety rails -------------------------------------------------------------------------
 say "9. The 'nothing leaves the machine' rails"
