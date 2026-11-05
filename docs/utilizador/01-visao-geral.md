@@ -10,6 +10,11 @@ O docsmaker lê o teu código Java e escreve a documentação dele:
 - um **README do projeto** (visão geral escrita por IA, mais a estrutura real de pacotes e classes);
 - em vários **níveis de detalhe**: método, classe, pacote ou projeto inteiro.
 
+Além disso, o comando `docsmaker rules` tenta explicar o **porquê**: lê os
+métodos com lógica de negócio (limites, validações, tarifas) e descreve, em
+linguagem natural, a regra que cada um implementa, com as linhas de código em
+que se apoia. Ver o [capítulo 8](08-regras-de-negocio.md).
+
 A escrita é feita por um modelo de IA, mas esse modelo corre **no teu computador**
 (através do [Ollama](https://ollama.com)). Não há conta, chave de API nem serviço
 na nuvem.
@@ -32,7 +37,8 @@ na nuvem.
 
 - **Só analisa Java** (por agora).
 - **O texto da IA é um rascunho.** Um modelo pequeno pode errar ou ser vago. Revê antes de confiar.
-- **Não altera a lógica do teu código.** Só acrescenta comentários (e apenas quando pedes `--mode inline`).
+- **Não altera a lógica do teu código.** Só acrescenta comentários (e apenas quando pedes `--mode inline`; o `rules` nunca escreve nas fontes).
+- **Não sabe porque é que uma regra existe.** O `rules` só vê o código: o "porquê" que apresenta é uma hipótese, marcada como tal, que alguém do negócio deve confirmar.
 - **Não substitui o teu `README.md`.** Produz o texto do README para a consola ou para um ficheiro à parte; copiá-lo para o projeto é um passo teu.
 - **Não é uma sandbox de rede.** Garante que *ele próprio* só fala com o Ollama local; não controla o que outros programas fazem.
 - **A deteção de segredos não é perfeita.** Usa padrões e estatística; pode haver falsos alarmes e, mais raramente, segredos que passam. Por isso a decisão final é tua.

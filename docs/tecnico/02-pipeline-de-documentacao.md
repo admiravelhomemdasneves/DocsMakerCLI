@@ -38,7 +38,9 @@ modelo. O projeto não escreve este README em disco no `README.md` do projeto
 
 ## O ponto único de geração: `generate`
 
-Todos os níveis passam por `Pipeline.generate(ctx, where, system, user)`:
+Todos os níveis passam por `Pipeline.generate(ctx, where, system, user)` (hoje um
+invólucro de `generateWith`, que acrescenta um formato de saída opcional e um
+validador de respostas, usados pela [extração de regras](10-extracao-de-regras.md#generate--generatewith)):
 
 ```
 1. Portão 1 (prompt):  Gate.Screen("prompt for <where>", user)
@@ -100,6 +102,7 @@ paralelismo (um modelo local satura o hardware de qualquer forma).
   sobrecargas, o último substitui os anteriores no prompt da classe, e o
   `--target pacote.Classe#nome` escolhe o primeiro. (O modo inline não é
   afetado: usa o intervalo de código de cada método.)
-- Sem retentativas nem *backoff* em caso de erro do modelo: o erro interrompe a execução
+- Sem retentativas nem *backoff* em caso de erro do modelo (a extração de regras repete uma vez, mas só uma
+  resposta de formato inutilizável, não um erro de ligação): o erro interrompe a execução
   (o que já foi gerado fica em cache, por isso repetir continua de onde parou).
 - Sem streaming: a saída aparece quando cada pedido termina.

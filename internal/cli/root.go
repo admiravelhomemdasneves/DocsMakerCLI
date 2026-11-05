@@ -42,6 +42,7 @@ func newRootCmd() *cobra.Command {
 	root.AddCommand(
 		newAnalyzeCmd(),
 		newDocCmd(),
+		newRulesCmd(),
 		newInitCmd(),
 		newModelCmd(),
 		newAllowlistCmd(),

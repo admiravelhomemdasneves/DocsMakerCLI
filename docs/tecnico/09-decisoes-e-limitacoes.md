@@ -22,6 +22,9 @@
 | 16 | **Verificar por re-análise** cada ficheiro escrito, escrita atómica | Confiar na inserção textual | Um bug de inserção nunca deixa um ficheiro partido no disco |
 | 17 | **Pedidos sequenciais** ao modelo | Paralelismo | Um modelo local satura o hardware; simplicidade e determinismo |
 | 18 | **Resolução de tipos por nome simples** | Resolução completa com imports/classpath | Suficiente para documentação; um compilador completo está fora do âmbito |
+| 19 | **Extração de regras como comando próprio, sem modo inline** | `doc --level rules`; bloco `@businessRule` no Javadoc | Saída de outra natureza (regra + evidência + confiança) e uma hipótese de IA dentro do código tem mais risco do que num relatório. Detalhes e decisões em [10](10-extracao-de-regras.md) |
+| 20 | **Confiança limitada pela evidência verificada no código** | Confiar na confiança declarada pelo modelo | Modelos pequenos declaram "alta" com facilidade; uma regra sem linhas reais que a sustentem nunca passa de `low` |
+| 21 | **Respostas inutilizáveis nunca vão para a cache** | Guardar tudo | Um JSON mal formado em cache seria devolvido, igual, em todas as execuções |
 
 ## 9.2 Limitações conhecidas
 
@@ -35,7 +38,11 @@
 - **Sem `--language`** no CLI (o campo existe no `app`); irrelevante enquanto só houver Java.
 - **Qualidade** limitada pelo modelo local; os resultados com modelos pequenos (1.5B) são genéricos.
   Os testes automáticos não avaliam a qualidade do texto.
-- **Sem retentativas, streaming nem barra de progresso por unidade.**
+- **Sem retentativas nem streaming** no `doc`. O `doc` também não tem progresso por unidade (o `rules` mostra-o no stderr).
+- **Regras de negócio** (`rules`): o "porquê" é sempre uma inferência do modelo; com o modelo de 1.5B medido,
+  9 de 15 regras plantadas saem com todos os valores certos e 5 de 6 métodos técnicos são tomados por regras;
+  cada método é analisado isoladamente. Lista completa em
+  [10 — Limitações](10-extracao-de-regras.md#9-limitações).
 
 ### Git e inline
 - Os blocos de IA vivem só no *working tree*: um `pull` que altere o ficheiro, ou `stash`, apaga-os (re-gerar é
@@ -71,3 +78,5 @@ Ordenadas por valor/esforço (opinião, não compromisso):
 6. Assinatura dos binários e *package managers* (winget, Homebrew, scoop).
 7. Resolução de `import`s e classes aninhadas na análise de Java.
 8. Detetores de segredos configuráveis por projeto (ficheiro versionado de *padrões*, sem valores).
+9. Evolução do `rules`: avaliação de qualidade com vários modelos, histórico git como pista do "porquê",
+   consolidação ao nível do projeto (ver [10 — Ideias seguintes](10-extracao-de-regras.md#10-ideias-seguintes)).

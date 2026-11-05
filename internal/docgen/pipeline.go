@@ -254,6 +254,23 @@ const OmittedSummary = "(documentation omitted: sensitive content)"
 // where describes what is being generated; it is shown in confirmation
 // prompts and recorded in the audit log.
 func (p *Pipeline) generate(ctx context.Context, where, system, user string) (string, error) {
+	return p.generateWith(ctx, where, system, user, genOptions{})
+}
+
+// genOptions tunes a single generateWith call; the zero value is the plain
+// free-text request every summarization level uses.
+type genOptions struct {
+	// format is passed to the model as llm.Request.Format ("json"). It is part
+	// of the cache key, but only when set, so existing cache entries stay valid.
+	format string
+	// accept, if set, judges the raw model answer. An answer it rejects is
+	// never written to the cache, and a cached answer it rejects is ignored,
+	// so a malformed generation cannot stick around and be replayed forever.
+	accept func(text string) error
+}
+
+// generateWith is generate with options; see generate for the gate/cache flow.
+func (p *Pipeline) generateWith(ctx context.Context, where, system, user string, opt genOptions) (string, error) {
 	if p.Gate != nil {
 		screened, err := p.Gate.Screen(ctx, "prompt for "+where, user)
 		if err != nil {
@@ -266,17 +283,24 @@ func (p *Pipeline) generate(ctx context.Context, where, system, user string) (st
 	}
 
 	key := cache.Key(p.Model, system, user)
+	if opt.format != "" {
+		key = cache.Key(p.Model, system, user, opt.format)
+	}
 	text, cached := "", false
 	if p.Cache != nil {
 		text, cached = p.Cache.Get(key)
+		if cached && opt.accept != nil && opt.accept(text) != nil {
+			cached = false
+		}
 	}
 	if !cached {
-		resp, err := p.Client.Generate(ctx, llm.Request{Model: p.Model, System: system, Prompt: user})
+		resp, err := p.Client.Generate(ctx, llm.Request{Model: p.Model, System: system, Prompt: user, Format: opt.format})
 		if err != nil {
 			return "", err
 		}
 		text = strings.TrimSpace(resp.Text)
 	}
+	cacheable := !cached && (opt.accept == nil || opt.accept(text) == nil)
 
 	if p.Gate != nil {
 		screened, err := p.Gate.Screen(ctx, "generated output for "+where, text)
@@ -289,7 +313,7 @@ func (p *Pipeline) generate(ctx context.Context, where, system, user string) (st
 		text = screened.Text
 	}
 
-	if p.Cache != nil && !cached {
+	if p.Cache != nil && cacheable {
 		_ = p.Cache.Set(key, text)
 	}
 	return text, nil

@@ -110,6 +110,25 @@ type CallRef struct {
 	Resolved   bool    `json:"resolved"`
 }
 
+// Signals are cheap structural measurements of a method body, counted by the
+// analyzer so downstream code can tell logic-heavy methods (decisions,
+// thresholds, validations) from plumbing (getters, assignments) without
+// knowing anything about the source language. Counts include nested lambdas
+// and anonymous classes.
+type Signals struct {
+	// Statements is the number of statements and local declarations.
+	Statements int `json:"statements"`
+	// Branches counts decision points: if/else-if, ternary and switch cases.
+	Branches int `json:"branches"`
+	// Throws counts explicit throws, the usual shape of a validation failure.
+	Throws int `json:"throws"`
+	// Comparisons counts relational/equality operators and equals-style calls.
+	Comparisons int `json:"comparisons"`
+	// Literals counts "magic" literals: numbers other than 0 and 1, and
+	// non-empty strings. Thresholds and codes show up here.
+	Literals int `json:"literals"`
+}
+
 // Method describes a single method or constructor.
 type Method struct {
 	Name        string    `json:"name"`
@@ -119,6 +138,9 @@ type Method struct {
 	CallsOut    []CallRef `json:"callsOut,omitempty"`
 	ExistingDoc string    `json:"existingDoc,omitempty"`
 	SourceRange Range     `json:"sourceRange"`
+	// Signals is nil when the method has no body (abstract/interface) or the
+	// analyzer does not measure bodies.
+	Signals *Signals `json:"signals,omitempty"`
 }
 
 // Field describes a single field/attribute of a type.

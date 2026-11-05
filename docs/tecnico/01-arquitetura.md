@@ -52,12 +52,13 @@ servidor HTTP local, uma UI) reutiliza tudo sem mexer no núcleo
 | Pacote | Responsabilidade | Porto que define / implementa |
 |--------|------------------|-------------------------------|
 | `cmd/docsmaker` | `main`; importa `lang/java` (efeito: regista o analisador) | |
-| `internal/cli` | Comandos Cobra: `analyze`, `doc`, `init`, `model`, `allowlist`, e o oculto `git-clean-filter` | driver |
-| `internal/app` | Casos de uso: `Analyze`, `GenerateDocs`, `Init`, `ModelStatus/List/Pull`, `Allowlist*`; orquestra o modo inline | fronteira |
+| `internal/cli` | Comandos Cobra: `analyze`, `doc`, `rules`, `init`, `model`, `allowlist`, e o oculto `git-clean-filter` | driver |
+| `internal/app` | Casos de uso: `Analyze`, `GenerateDocs`, `ExtractRules`, `Init`, `ModelStatus/List/Pull`, `Allowlist*`; orquestra o modo inline | fronteira |
 | `internal/langmodel` | IR independente da linguagem (`CodeModel`) e o porto `LanguageAnalyzer` + registo | **`LanguageAnalyzer`** |
 | `internal/lang/java` | Analisador de Java com tree-sitter | implementa `LanguageAnalyzer` |
 | `internal/project` | Descoberta de ficheiros (respeita `.gitignore`), deteção de Maven/Gradle e nome do projeto | |
-| `internal/docgen` | Pipeline de sumarização hierárquica e construção do README | usa `llm.Client`, `cache.Store`, `secrets.Gate` |
+| `internal/docgen` | Pipeline de sumarização hierárquica e construção do README; extração de regras (`ExtractRules`) e o seu relatório | usa `llm.Client`, `cache.Store`, `secrets.Gate` |
+| `internal/rules` | Tipo `Rule`, seleção de métodos candidatos, leitura tolerante da resposta do modelo e verificação de evidência (ver [capítulo 10](10-extracao-de-regras.md)) | dados e funções puras |
 | `internal/llm` | Cliente do modelo; `Manager` (instalar/arrancar/listar/descarregar); guardas de "só local" | **`Client`**; implementa-o com `OllamaClient` |
 | `internal/llm/prompts` | Montagem pura dos prompts por nível | |
 | `internal/cache` | Cache por hash do pedido | **`Store`**; `FileStore` |
