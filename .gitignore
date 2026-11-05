@@ -1,0 +1,8 @@
+/docsmaker
+/docsmaker.exe
+/dist/
+.docsmaker/
+
+# local tooling and build leftovers
+target/
+*.class

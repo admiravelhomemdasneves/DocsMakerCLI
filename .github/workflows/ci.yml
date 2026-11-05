@@ -1,0 +1,36 @@
+name: ci
+
+# CGO + a C grammar means no cross-compilation: every OS builds and tests
+# natively on its own runner.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        if: runner.os == 'Linux'
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: vet
+        run: go vet ./...
+      - name: test
+        run: go test ./...
+      - name: build the release artifact (smoke test)
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            powershell -File scripts/build.ps1
+          else
+            scripts/build.sh
+          fi
