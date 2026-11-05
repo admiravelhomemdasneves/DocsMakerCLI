@@ -1,8 +1,9 @@
 # docsmaker
 
 Generates documentation for your code (class and method descriptions, package
-overviews, a project README) using an AI model that runs **on your own
-machine**. Java today; the analyzer is pluggable for other languages.
+overviews, a project README) and recovers the **business rules** buried in it,
+using an AI model that runs **on your own machine**. Java today; the analyzer
+is pluggable for other languages.
 
 - **Nothing leaves your machine.** It talks only to a local [Ollama](https://ollama.com).
   A remote `OLLAMA_HOST` and Ollama "cloud" models are refused. Your code is
@@ -47,6 +48,29 @@ docsmaker doc --mode inline              # write /** */ comments into the source
 `project`. Results are cached in `.docsmaker/`, so re-running is fast and only
 changed code is sent to the model again. Use `--model` to pick another local
 model and `--format json` for machine-readable output.
+
+### Business rules
+
+Technical docs say *what* code does; in legacy code the missing part is *why*
+(that `if (total < 20)`, that limit of 500). `docsmaker rules` reads the methods
+that hold decisions, thresholds and validations and asks the local model to
+state the rule each one implements:
+
+```
+docsmaker rules                              # report printed to the console
+docsmaker rules --target com.acme.billing    # one package, class or method
+docsmaker rules --mode sidecar               # also write .docsmaker/rules/RULES.md + one file per class
+docsmaker rules --min-confidence medium      # hide the least trustworthy rules
+docsmaker rules --format json                # machine-readable
+```
+
+Each rule comes with the code lines it rests on, a confidence level and the
+questions only someone who knows the business can answer. The model sees only
+the code, so the *why* is always presented as an inferred hypothesis, and a
+rule whose quoted evidence is not really in the code is capped at low
+confidence. Sources are never modified, and the same secret screening as `doc`
+applies. Methods with no decisions (getters, assignments) are not analysed;
+`--min-score` and `--max-methods` control how many are.
 
 ### Sensitive information
 
@@ -104,6 +128,7 @@ Good to know:
 |---------|---------|
 | `analyze` | structural analysis, no AI |
 | `doc` | generate documentation |
+| `rules` | extract the business rules the code implements |
 | `init` | wire the git filter in this clone |
 | `model status, list, pull` | manage the local Ollama and models |
 | `allowlist list, remove, add-pattern` | manage values declared not to be secrets |
@@ -126,6 +151,9 @@ CI builds and releases for Windows, Linux and macOS (`.github/workflows`).
 - Java only; nested classes, generics and import resolution are not modelled.
 - Quality depends on the local model: bigger models write better docs and need more RAM.
 - Generated text is a draft. Review it before relying on it.
+- Extracted business rules are the model's reading of the code alone: the
+  *why* is a guess, each method is read in isolation, and constants or tables
+  defined elsewhere are not seen.
 
 ## Verify the guarantees yourself
 

@@ -8,6 +8,7 @@ Qualquer erro termina com código de saída `1` e a mensagem vai para o stderr.
 |---------|--------|
 | [`analyze`](#analyze) | Estrutura do projeto, sem IA |
 | [`doc`](#doc) | Gerar documentação |
+| [`rules`](#rules) | Extrair as regras de negócio do código |
 | [`init`](#init) | Preparar o git para a documentação dentro do código |
 | [`model`](#model) | Gerir o Ollama e os modelos |
 | [`allowlist`](#allowlist) | Gerir valores declarados "não é segredo" |
@@ -108,6 +109,49 @@ No fim mostra uma linha como:
 | `replaced` | Um comentário de IA anterior foi atualizado |
 | `unchanged` | Já estava igual |
 | `skipped` | Deixado em paz (por exemplo, já tem um comentário escrito por uma pessoa); o motivo é listado |
+
+---
+
+## rules
+
+```
+docsmaker rules [path] [opções]
+```
+
+Lê os métodos que parecem conter lógica de negócio e pede ao modelo local que
+explique, em linguagem natural, a regra que cada um implementa, com a evidência
+no código e uma confiança. O "porquê" é sempre uma hipótese. Nunca escreve nos
+teus ficheiros de código. Explicação completa no [capítulo 8](08-regras-de-negocio.md).
+
+| Opção | Por omissão | Descrição |
+|-------|-------------|-----------|
+| `--target` | (projeto todo) | Limita a um pacote (`com.empresa.faturacao`), uma classe (`…Fatura`) ou um método (`…Fatura#total`). Um alvo que não corresponde a nada é um erro |
+| `--mode` | `console` | `console` ou `sidecar` (guarda `.docsmaker/rules/RULES.md` e um ficheiro por classe com regras). Não existe `inline` |
+| `--format` | `text` | `text` (relatório em Markdown) ou `json` |
+| `--min-score` | `3` | Pontuação estrutural mínima para um método ser analisado. Mais alto = menos métodos, mais promissores. Métodos sem decisões pontuam 0 e nunca são analisados |
+| `--max-methods` | `0` | Analisa no máximo N métodos, os de pontuação mais alta (0 = sem limite) |
+| `--min-confidence` | (todas) | Esconde as regras menos fiáveis que `low`, `medium` ou `high`. O número escondido é indicado |
+| `--output-lang` | `pt` | Idioma das regras e do relatório: `pt`, `en` ou qualquer idioma que o modelo escreva (o relatório usa rótulos em inglês fora de `pt`) |
+| `--secrets` | `prompt` | Igual ao `doc`: `prompt`, `strict` ou `off` |
+| `--yes` | desligado | Igual ao `doc`: nunca perguntar; qualquer informação sensível interrompe a execução |
+| `--model` | `qwen2.5-coder:7b` | Modelo do Ollama a usar |
+
+O relatório vai para o stdout; o progresso (`[3/12] pacote.Classe#método`) e os
+avisos vão para o stderr, por isso `--format json` fica limpo para outras
+ferramentas.
+
+### Saída `--format json`
+
+Um objeto com `project`, `lang`, `summary` (`found`, `none`, `omitted`,
+`failed`, `classes`), `hiddenByConfidence`, `outputDir` (em `--mode sidecar`) e
+`results`: um item por método analisado, com:
+
+| Campo | Significado |
+|-------|-------------|
+| `id`, `target`, `range`, `score` | Identificação (`pacote.Classe#método@L<linha>`), localização e pontuação |
+| `status` | `rule` (regra encontrada), `none` (sem regra), `omitted` (saltado por informação sensível), `failed` (sem resposta utilizável, ver `reason`) |
+| `rule` | Só quando `status` é `rule`: `statement`, `conditions`, `rationale`, `evidence`, `confidence` (`low`/`medium`/`high`), `openQuestions` |
+| `evidenceDropped` | Linhas de evidência citadas pelo modelo que não existem no código e foram removidas |
 
 ---
 

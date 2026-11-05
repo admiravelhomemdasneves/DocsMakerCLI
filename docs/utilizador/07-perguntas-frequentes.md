@@ -93,6 +93,12 @@ pelo `.gitignore`). Confirma o caminho com `docsmaker analyze`.
 O `--target` não corresponde a nada. Corre `docsmaker analyze` para ver os nomes exatos
 (pacote completo, maiúsculas/minúsculas, `Classe#método`).
 
+### `--target "…" matches no package, class or method`
+O mesmo, no comando `rules`: aceita `pacote`, `pacote.Classe` ou `pacote.Classe#método`.
+
+### `rules does not support --mode inline`
+O `rules` só mostra o relatório ou guarda-o em `.docsmaker/rules/` (`--mode sidecar`). Não escreve nas fontes.
+
 ---
 
 ## Problemas frequentes
@@ -100,6 +106,15 @@ O `--target` não corresponde a nada. Corre `docsmaker analyze` para ver os nome
 ### "A primeira execução foi demorada e a segunda foi instantânea"
 É o esperado: a cache em `.docsmaker/cache/` guarda os resultados. Se mudares o modelo, o código ou os
 prompts, só o que depende disso é regenerado.
+
+### "O `rules` diz 'no candidate methods' / não encontrou nada"
+Nenhum método no âmbito atinge a pontuação mínima (`--min-score`, por omissão 3). Os métodos sem decisões
+(getters, atribuições) não são analisados. Baixa o `--min-score` ou alarga o `--target`. Ver o
+[capítulo 8](08-regras-de-negocio.md#como-se-escolhem-os-métodos).
+
+### "O `rules` marca um método como 'falhou'"
+O modelo não devolveu uma resposta no formato pedido, nem à segunda tentativa. É mais frequente com modelos
+pequenos. Volta a correr (só esse método é pedido de novo) ou usa um modelo maior com `--model`.
 
 ### "Quero começar do zero"
 Apaga a pasta `.docsmaker/` do projeto (cache, registos e allowlist).

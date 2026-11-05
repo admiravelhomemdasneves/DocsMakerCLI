@@ -1,7 +1,8 @@
 # Documentação do docsmaker
 
 O **docsmaker** gera documentação de código (descrições de classes e métodos,
-resumos de pacotes e um README de projeto) com um modelo de IA que corre
+resumos de pacotes e um README de projeto) e extrai as **regras de negócio**
+escondidas no código, com um modelo de IA que corre
 **na tua própria máquina**. Hoje analisa Java; a arquitetura permite outras
 linguagens.
 
@@ -20,6 +21,7 @@ Não é preciso saber Go nem como a ferramenta funciona por dentro.
 | 5 | [Informação sensível](utilizador/05-informacao-sensivel.md) | Passwords, chaves e tokens: o que acontece e como decidir |
 | 6 | [Documentação dentro do código](utilizador/06-documentacao-no-codigo.md) | Escrever nos ficheiros sem que a IA chegue ao repositório |
 | 7 | [Perguntas frequentes e problemas](utilizador/07-perguntas-frequentes.md) | Mensagens de erro e como resolver |
+| 8 | [Regras de negócio](utilizador/08-regras-de-negocio.md) | Recuperar o "porquê" do código antigo com `docsmaker rules` |
 
 ## Para quem desenvolve a ferramenta — [`tecnico/`](tecnico/)
 
@@ -34,5 +36,6 @@ Não é preciso saber Go nem como a ferramenta funciona por dentro.
 | 7 | [Extensibilidade](tecnico/07-extensibilidade.md) | Novas linguagens, detetores, uma interface gráfica |
 | 8 | [Build, testes e CI](tecnico/08-build-testes-e-ci.md) | Compilar, testar, empacotar, publicar |
 | 9 | [Decisões e limitações](tecnico/09-decisoes-e-limitacoes.md) | Porquê assim, e o que fica por fazer |
+| 10 | [Extração de regras de negócio](tecnico/10-extracao-de-regras.md) | Sinais, seleção, contrato com o modelo, defesas, relatório |
 
 O [README da raiz](../README.md) é um resumo rápido em inglês.
