@@ -15,12 +15,6 @@ machine**. Java today; the analyzer is pluggable for other languages.
 - **One executable.** No runtime to install (Ollama aside, which `docsmaker`
   sets up for you, asking first).
 
-## Documentation
-
-Full documentation (in Portuguese) lives in [`docs/`](docs/README.md): a user guide
-(install, commands, sensitive information, inline docs and git) and a developer guide
-(architecture, pipeline, security model, extending, build and CI).
-
 ## Install
 
 Download the archive for your OS from the releases page, extract it, and run
