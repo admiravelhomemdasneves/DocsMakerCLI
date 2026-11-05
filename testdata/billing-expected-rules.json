@@ -1,0 +1,38 @@
+{
+  "_comment": "Gabarito of the business rules planted in sample-project/billing. Used by rules tests and the quality evaluation (step 7). Per rule: every inner list in 'keywords' must be matched by at least one of its alternatives (lowercase fragments) in a correct explanation.",
+  "project": "sample-project",
+  "rules": [
+    {
+      "target": "com.example.billing.DiscountPolicy#discountFor",
+      "summary": "Volume discount by quantity tier (>=10: 5%, >=50: 10%, >=100: 15%); none for orders under 20.",
+      "keywords": [["10", "50", "100"], ["15"], ["20"]]
+    },
+    {
+      "target": "com.example.billing.CreditPolicy#canExtendCredit",
+      "summary": "Credit is refused when more than 90 days overdue; customers under 6 months are capped at 500; balance plus amount must stay within the limit.",
+      "keywords": [["90"], ["6"], ["500"], ["limit", "limite"]]
+    },
+    {
+      "target": "com.example.billing.TaxCalculator#vatRate",
+      "summary": "VAT rate depends on region (mainland 23/13/6, Madeira 22/12/5, Azores 16/9/4) and product category (reduced for food and books, intermediate for restaurants).",
+      "keywords": [["23"], ["22"], ["16"], ["madeira"], ["azores", "açores"]]
+    },
+    {
+      "target": "com.example.billing.TaxIdValidator#isValidNif",
+      "summary": "Portuguese NIF: 9 digits, first digit not 0/4/7/8, mod-11 check digit.",
+      "keywords": [["9"], ["11"], ["check", "controlo", "verifica"]]
+    },
+    {
+      "target": "com.example.billing.ReturnPolicy#canReturn",
+      "summary": "Returns: perishables never; electronics only unopened within 30 days; everything else within 14 days.",
+      "keywords": [["14"], ["30"], ["perishable", "perec"], ["opened", "aberto"]]
+    }
+  ],
+  "noRule": [
+    "com.example.billing.Customer#getName",
+    "com.example.billing.Customer#getBalance",
+    "com.example.billing.Customer#getCreditLimit",
+    "com.example.billing.Customer#getDaysOverdue",
+    "com.example.billing.Customer#getMonthsAsCustomer"
+  ]
+}
