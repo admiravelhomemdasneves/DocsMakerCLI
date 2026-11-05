@@ -104,7 +104,7 @@ A versão por omissão é `git describe --tags --always --dirty`, ou `dev` se n�
 | Ficheiro | Quando | O que faz |
 |----------|--------|-----------|
 | `.github/workflows/ci.yml` | *push* para `main` e *pull requests* | Em Ubuntu, Windows e macOS: `gofmt` (só no Linux), `go vet`, `go test`, e o *build* completo do pacote como teste de fumo |
-| `.github/workflows/release.yml` | *tag* `v*` | Em cada SO: testa, constrói e empacota; publica os pacotes e checksums numa *release* (`gh release create --generate-notes`) |
+| `.github/workflows/release.yml` | *tag* `v*` | Em cada SO: testa, constrói e empacota; cria uma *release* **em rascunho** com os pacotes e checksums (`gh release create --generate-notes --draft`); fica privada até alguém a rever e a publicar no GitHub |
 
 Para lançar uma versão: `git tag v1.0.0 && git push origin v1.0.0`.
 
