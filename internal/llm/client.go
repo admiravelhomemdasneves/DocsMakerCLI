@@ -13,6 +13,10 @@ type Request struct {
 	Model  string
 	System string
 	Prompt string
+	// Format constrains the model's output. "" is free text; "json" makes the
+	// runtime emit syntactically valid JSON, which small local models need to
+	// answer structured prompts reliably. It says nothing about the shape.
+	Format string
 }
 
 // Response is the model's generated text for a Request.

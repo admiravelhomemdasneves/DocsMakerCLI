@@ -47,6 +47,7 @@ type generateRequest struct {
 	Prompt string `json:"prompt"`
 	System string `json:"system,omitempty"`
 	Stream bool   `json:"stream"`
+	Format string `json:"format,omitempty"`
 }
 
 type generateResponse struct {
@@ -64,6 +65,7 @@ func (c *OllamaClient) Generate(ctx context.Context, req Request) (Response, err
 		Prompt: req.Prompt,
 		System: req.System,
 		Stream: false,
+		Format: req.Format,
 	})
 	if err != nil {
 		return Response{}, fmt.Errorf("llm: encode request: %w", err)
