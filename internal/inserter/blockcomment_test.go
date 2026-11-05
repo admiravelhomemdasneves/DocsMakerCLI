@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/andresantos/docsmakercli/internal/gitfilter"
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/gitfilter"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 )
 
 const sample = "package p;\n\n" +

@@ -12,14 +12,14 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/andresantos/docsmakercli/internal/cache"
-	"github.com/andresantos/docsmakercli/internal/docgen"
-	"github.com/andresantos/docsmakercli/internal/gitfilter"
-	"github.com/andresantos/docsmakercli/internal/langmodel"
-	"github.com/andresantos/docsmakercli/internal/llm"
-	"github.com/andresantos/docsmakercli/internal/output"
-	"github.com/andresantos/docsmakercli/internal/project"
-	"github.com/andresantos/docsmakercli/internal/secrets"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/cache"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/docgen"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/gitfilter"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/llm"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/output"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/project"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/secrets"
 )
 
 // AnalyzeOptions configures a structural analysis run.

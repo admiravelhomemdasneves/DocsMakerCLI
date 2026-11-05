@@ -6,7 +6,7 @@ package inserter
 import (
 	"context"
 
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 )
 
 // Insertion asks for Content to be written as a doc comment directly above

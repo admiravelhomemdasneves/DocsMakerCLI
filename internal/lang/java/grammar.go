@@ -8,7 +8,7 @@ package java
 import (
 	"context"
 
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 	sitter "github.com/smacker/go-tree-sitter"
 	tsjava "github.com/smacker/go-tree-sitter/java"
 )

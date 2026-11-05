@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/andresantos/docsmakercli/internal/app"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/app"
 	"github.com/spf13/cobra"
 )
 

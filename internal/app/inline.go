@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/andresantos/docsmakercli/internal/docgen"
-	"github.com/andresantos/docsmakercli/internal/inserter"
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/docgen"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/inserter"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 )
 
 // InlineOutcome reports what --mode inline did for one declaration.

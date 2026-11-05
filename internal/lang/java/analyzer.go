@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 )
 
 func init() {

@@ -29,7 +29,7 @@ New-Item -ItemType Directory -Force $out | Out-Null
 Write-Host "building $name ..."
 $env:CGO_ENABLED = "1"
 go build -trimpath -tags "netgo,osusergo" `
-    -ldflags "-s -w -X github.com/andresantos/docsmakercli/internal/cli.Version=$version" `
+    -ldflags "-s -w -X github.com/admiravelhomemdasneves/DocsMakerCLI/internal/cli.Version=$version" `
     -o "$out\docsmaker.exe" ./cmd/docsmaker
 if ($LASTEXITCODE -ne 0) { throw "go build failed" }
 

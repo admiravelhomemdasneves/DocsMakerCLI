@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/andresantos/docsmakercli/internal/llm"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/llm"
 )
 
 // ErrDeclined is returned when the developer says no to an install or

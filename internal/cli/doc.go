@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/andresantos/docsmakercli/internal/app"
-	"github.com/andresantos/docsmakercli/internal/secrets"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/app"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/secrets"
 	"github.com/spf13/cobra"
 )
 

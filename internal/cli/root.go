@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Version is set at build time: -ldflags "-X github.com/andresantos/docsmakercli/internal/cli.Version=v1.2.3".
+// Version is set at build time: -ldflags "-X github.com/admiravelhomemdasneves/DocsMakerCLI/internal/cli.Version=v1.2.3".
 var Version = "dev"
 
 // Execute runs the root command. Called from cmd/docsmaker/main.go.

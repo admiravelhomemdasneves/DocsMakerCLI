@@ -14,7 +14,7 @@ GOARCH="$(go env GOARCH)"
 NAME="docsmaker_${VERSION}_${GOOS}_${GOARCH}"
 OUT="dist/${NAME}"
 
-LDFLAGS="-s -w -X github.com/andresantos/docsmakercli/internal/cli.Version=${VERSION}"
+LDFLAGS="-s -w -X github.com/admiravelhomemdasneves/DocsMakerCLI/internal/cli.Version=${VERSION}"
 EXT=""
 case "$GOOS" in
   windows) EXT=".exe" ;;

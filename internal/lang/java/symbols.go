@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 

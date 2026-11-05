@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	_ "github.com/andresantos/docsmakercli/internal/lang/java"
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	_ "github.com/admiravelhomemdasneves/DocsMakerCLI/internal/lang/java"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 )
 
 func javaAnalyzer(t *testing.T) langmodel.LanguageAnalyzer {

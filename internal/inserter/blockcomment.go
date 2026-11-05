@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/andresantos/docsmakercli/internal/gitfilter"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/gitfilter"
 )
 
 // BlockCommentInserter writes `/** ... */` doc comments, the convention

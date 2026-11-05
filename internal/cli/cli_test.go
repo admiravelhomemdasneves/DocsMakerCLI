@@ -15,7 +15,7 @@ import (
 	"sync"
 	"testing"
 
-	_ "github.com/andresantos/docsmakercli/internal/lang/java"
+	_ "github.com/admiravelhomemdasneves/DocsMakerCLI/internal/lang/java"
 )
 
 // fakeOllama is a local stand-in for the Ollama API. Pointing OLLAMA_HOST at

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/andresantos/docsmakercli/internal/langmodel"
-	"github.com/andresantos/docsmakercli/internal/llm"
-	"github.com/andresantos/docsmakercli/internal/secrets"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/llm"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/secrets"
 )
 
 const secretURL = "jdbc:mysql://admin:hunter2@localhost/db"

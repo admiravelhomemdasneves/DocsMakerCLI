@@ -3,7 +3,7 @@ package java
 import (
 	"strings"
 
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 )
 
 // symbolTable maps a simple type name to every rawType across the project

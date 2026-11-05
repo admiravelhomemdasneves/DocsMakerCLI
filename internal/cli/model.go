@@ -8,8 +8,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/andresantos/docsmakercli/internal/app"
-	"github.com/andresantos/docsmakercli/internal/llm"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/app"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/llm"
 	"github.com/spf13/cobra"
 )
 

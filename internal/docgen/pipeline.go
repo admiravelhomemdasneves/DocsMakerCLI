@@ -11,11 +11,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/andresantos/docsmakercli/internal/cache"
-	"github.com/andresantos/docsmakercli/internal/langmodel"
-	"github.com/andresantos/docsmakercli/internal/llm"
-	"github.com/andresantos/docsmakercli/internal/llm/prompts"
-	"github.com/andresantos/docsmakercli/internal/secrets"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/cache"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/llm"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/llm/prompts"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/secrets"
 )
 
 // Level selects how much of the project a Run covers.

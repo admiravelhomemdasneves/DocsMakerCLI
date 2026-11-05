@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/andresantos/docsmakercli/internal/langmodel"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/langmodel"
 )
 
 const methodSystem = "You are a terse code documentation assistant. Given a Java method's " +

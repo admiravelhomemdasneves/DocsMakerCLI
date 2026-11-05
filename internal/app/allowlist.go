@@ -3,7 +3,7 @@ package app
 import (
 	"path/filepath"
 
-	"github.com/andresantos/docsmakercli/internal/secrets"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/secrets"
 )
 
 func allowlistPath(projectPath string) string {

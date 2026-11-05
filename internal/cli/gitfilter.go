@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/andresantos/docsmakercli/internal/gitfilter"
+	"github.com/admiravelhomemdasneves/DocsMakerCLI/internal/gitfilter"
 	"github.com/spf13/cobra"
 )
 
