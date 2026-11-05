@@ -58,8 +58,10 @@
 - Confia-se no Ollama como programa; não é uma *sandbox* de rede.
 
 ### Distribuição e validação
-- **Só o Windows foi construído e testado.** Linux e macOS dependem da primeira execução do CI.
-- Os *workflows* do GitHub Actions nunca foram executados.
+- **Só o Windows foi usado de ponta a ponta** (Ollama e modelo reais, `demo.sh`, instalação). Linux e macOS
+  são construídos e testados pelo CI do GitHub Actions (testes e arranque do executável), e a *release*
+  `v0.2.0` foi gerada pelo workflow para os três sistemas; mas o pacote de macOS é só para Apple Silicon e
+  não há pacote para Mac Intel nem para Linux ARM.
 - Binários **não assinados**.
 - O `install.ps1` só foi verificado sintaticamente (altera o `PATH` do utilizador, por isso não foi corrido
   durante o desenvolvimento).

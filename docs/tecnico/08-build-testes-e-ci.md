@@ -106,12 +106,17 @@ A versão por omissão é `git describe --tags --always --dirty`, ou `dev` se n�
 | `.github/workflows/ci.yml` | *push* para `main` e *pull requests* | Em Ubuntu, Windows e macOS: `gofmt` (só no Linux), `go vet`, `go test`, e o *build* completo do pacote como teste de fumo |
 | `.github/workflows/release.yml` | *tag* `v*` | Em cada SO: testa, constrói e empacota; cria uma *release* **em rascunho** com os pacotes e checksums (`gh release create --generate-notes --draft`); fica privada até alguém a rever e a publicar no GitHub |
 
-Para lançar uma versão: `git tag v1.0.0 && git push origin v1.0.0`.
+Para lançar uma versão: `git tag -a v1.0.0 -m "…" && git push origin v1.0.0`. O *workflow* cria a *release* em
+rascunho; revê as notas e publica-a na página de *releases* do GitHub.
 
-**Estado de validação:** estes *workflows* foram escritos mas **nunca executados**. Os *scripts* de build foram
-exercitados no Windows (e o `build.sh` no Git Bash); a ligação estática no Linux e o build em macOS só ficam
-validados na primeira execução real. Se o repositório não for GitHub, os *scripts* em `scripts/` são a fonte da
-verdade e os *workflows* são finos; portar para outra plataforma é reescrever só os YAML.
+**Estado de validação:** ambos os *workflows* já foram executados com sucesso. O `ci.yml` passou em Ubuntu,
+Windows e macOS (gofmt, vet, testes e o *build* do pacote com teste de fumo), e o `release.yml` correu com a tag
+`v0.2.0` e produziu `docsmaker_v0.2.0_windows_amd64.zip`, `…_linux_amd64.tar.gz` e `…_darwin_arm64.tar.gz` com
+os respetivos `.sha256`. Ou seja, a ligação estática no Linux e o build em macOS (só Apple Silicon: o
+`macos-latest` do GitHub) estão validados **ao nível do build e do arranque do executável**. O que a
+integração contínua não faz: correr o Ollama e um modelo, correr o `demo.sh`, nem instalar com os
+`install.ps1`/`install.sh`; isso só foi feito no Windows. Se o repositório não for GitHub, os *scripts* em
+`scripts/` são a fonte da verdade e os *workflows* são finos; portar para outra plataforma é reescrever só os YAML.
 
 ## Distribuição e assinatura
 

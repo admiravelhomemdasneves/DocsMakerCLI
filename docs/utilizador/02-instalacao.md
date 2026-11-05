@@ -4,8 +4,9 @@ São dois passos: instalar o **docsmaker** e preparar o **modelo de IA** (uma s�
 
 ## Requisitos
 
-- Windows 10/11, Linux ou macOS. (O Windows é a plataforma testada até agora; os pacotes de Linux e
-  macOS são construídos pela integração contínua mas ainda não foram validados em máquinas reais.)
+- Windows 10/11 (64 bits), Linux (x86-64) ou macOS (só Apple Silicon). Os três pacotes são construídos e
+  testados pela integração contínua em cada sistema, mas só o Windows foi usado de ponta a ponta, com o
+  Ollama e um modelo reais. Para um Mac Intel ou outro Linux, compila a partir do código-fonte (ver o README).
 - Espaço em disco para o modelo de IA (alguns GB; depende do modelo).
 - RAM suficiente para o modelo escolhido (modelos maiores escrevem melhor mas pedem mais memória).
 - Para a documentação dentro do código (`--mode inline`): o **git** instalado.
