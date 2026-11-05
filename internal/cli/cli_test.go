@@ -26,6 +26,10 @@ type fakeOllama struct {
 	models  []string
 	prompts []string
 	reply   string
+	// replyFn, if set, chooses the answer from the prompt (rules tests need
+	// a different answer per method); formats records each request's format.
+	replyFn func(prompt string) string
+	formats []string
 }
 
 func startFakeOllama(t *testing.T, models ...string) *fakeOllama {
@@ -43,11 +47,15 @@ func startFakeOllama(t *testing.T, models ...string) *fakeOllama {
 		fmt.Fprintf(w, `{"models":[%s]}`, strings.Join(items, ","))
 	})
 	mux.HandleFunc("/api/generate", func(w http.ResponseWriter, r *http.Request) {
-		var req struct{ Prompt string }
+		var req struct{ Prompt, Format string }
 		_ = json.NewDecoder(r.Body).Decode(&req)
 		f.mu.Lock()
 		f.prompts = append(f.prompts, req.Prompt)
 		reply := f.reply
+		if f.replyFn != nil {
+			reply = f.replyFn(req.Prompt)
+		}
+		f.formats = append(f.formats, req.Format)
 		f.mu.Unlock()
 		_ = json.NewEncoder(w).Encode(map[string]any{"response": reply, "done": true})
 	})
@@ -152,7 +160,7 @@ func TestVersionAndHelp(t *testing.T) {
 		t.Fatalf("--version: %q %v", out, err)
 	}
 	out, _, _ = run(t, "", "--help")
-	for _, cmd := range []string{"analyze", "doc", "init", "model", "allowlist"} {
+	for _, cmd := range []string{"analyze", "doc", "rules", "init", "model", "allowlist"} {
 		if !strings.Contains(out, cmd) {
 			t.Errorf("--help does not list %q", cmd)
 		}

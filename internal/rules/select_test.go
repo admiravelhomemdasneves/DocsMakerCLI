@@ -108,3 +108,14 @@ func TestCandidateID(t *testing.T) {
 		t.Fatalf("candidates = %+v, want one with ID com.y.Tax#check@L40", cs)
 	}
 }
+
+func TestScopeExists(t *testing.T) {
+	for scope, want := range map[string]bool{
+		"": true, "com.x": true, "com.x.Pricing": true, "com.x.Pricing#getRate": true, // even a method that is no candidate
+		"com.nope": false, "com.x.Pricing#nope": false, "Pricing": false,
+	} {
+		if got := ScopeExists(testModel(), scope); got != want {
+			t.Errorf("ScopeExists(%q) = %v, want %v", scope, got, want)
+		}
+	}
+}

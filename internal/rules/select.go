@@ -108,3 +108,20 @@ func fqcn(decl *langmodel.TypeDecl) string {
 	}
 	return decl.Package + "." + decl.Name
 }
+
+// ScopeExists reports whether scope (see SelectOptions.Scope) names at least
+// one method of model, regardless of score. It lets a caller tell a mistyped
+// target from a correct one whose methods are simply not candidates.
+func ScopeExists(model *langmodel.CodeModel, scope string) bool {
+	for pi := range model.Packages {
+		for ti := range model.Packages[pi].Types {
+			decl := &model.Packages[pi].Types[ti]
+			for mi := range decl.Methods {
+				if inScope(scope, decl, &decl.Methods[mi]) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
